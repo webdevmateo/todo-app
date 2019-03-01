@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Udacity Todos Goals</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.7.2/redux.min.js"></script>
   </head>
   <body>
 
@@ -19,37 +20,6 @@
       <ul id="goals"></ul>
     </div>
     <script type="text/javascript">
-      //Library code
-
-      const store = (function createStore (reducer) {
-        //The store should have four parts
-        //1. The state
-        //2. Get the state
-        //3. Listen to changes on the state
-        //4. Update the state
-
-        let state;
-        let listeners = [];
-
-        const getState = () => state;
-        const subscribe = (listener) => {
-          listeners.push(listener);
-          return () => {
-            listeners = listeners.filter((l) => l !== listener);
-          }
-        }
-
-        const dispatch = (action) => {
-          state = reducer(state, action);
-          listeners.forEach((listener) => listener());
-        }
-
-        return {
-          getState,
-          subscribe,
-          dispatch
-        }
-      })(app);
 
       //App code
 
@@ -122,12 +92,10 @@
         }
       }
 
-      function app (state = {}, action) {
-        return {
-          todos: todos(state.todos, action),
-          goals: goals(state.goals, action)
-        }
-      }
+      const store = (Redux.createStore)(Redux.combineReducers({
+        todos,
+        goals,
+      }));
 
       //DOM Code
 
@@ -207,14 +175,7 @@
 
           todos.forEach(populateTodoList);
           goals.forEach(populateGoalList);
-
       });
-
-      store.dispatch(removeTodoAction(1));
-
-      store.dispatch(toggleTodoAction(0));
-
-      store.dispatch(removeGoalAction(0));
     </script>
   </body>
 </html>
