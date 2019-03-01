@@ -42,8 +42,6 @@
         const dispatch = (action) => {
           state = reducer(state, action);
           listeners.forEach((listener) => listener());
-          populateTodoList();
-          populateGoalList();
         }
 
         return {
@@ -131,18 +129,21 @@
         }
       }
 
+      //DOM Code
+
       (function addTodo () {
         const todoBtn = document.getElementById('todoBtn');
         let id = 0;
         todoBtn.addEventListener('click', () => {
-          const input = document.getElementById('todo').value;
-          if (input) {
+          const input = document.getElementById('todo');
+          if (input.value) {
             store.dispatch(addTodoAction({
               id,
-              name: input,
+              name: input.value,
               complete: false,
             }));
             id += 1;
+            input.value = '';
           }
         });
       })();
@@ -151,31 +152,47 @@
         const goalBtn = document.getElementById('goalBtn');
         let id = 0;
         goalBtn.addEventListener('click', () => {
-          const input = document.getElementById('goal').value;
-          if (input) {
+          const input = document.getElementById('goal');
+          if (input.value) {
             store.dispatch(addGoalAction({
               id,
-              name: input,
+              name: input.value,
             }));
             id += 1;
+            input.value = '';
           }
         });
       })();
 
-      function populateTodoList () {
+      function populateTodoList (todo) {
+        const node = document.createElement('li');
+        const text = document.createTextNode(todo.name);
+        node.appendChild(text);
         const list = document.getElementById('todos');
-        const todos = store.getState().todos;
-        list.innerHTML = todos.map((todo) => `<li>${todo.name}</li>`).join('');
+        list.appendChild(node);
+        node.style.textDecoration = todo.complete ? 'line-through' : 'none';
+        node.addEventListener('click', () => {
+          store.dispatch(toggleTodoAction(todo.id));
+        });
       }
 
-      function populateGoalList () {
+      function populateGoalList (goal) {
+        const node = document.createElement('li');
+        const text = document.createTextNode(goal.name);
+        node.appendChild(text);
         const list = document.getElementById('goals');
-        const goals = store.getState().goals;
-        list.innerHTML = goals.map((goal) => `<li>${goal.name}</li>`).join('');
+        list.appendChild(node);
       }
 
       store.subscribe(() => {
-        console.log('The new state is ', store.getState());
+          const {todos, goals} = store.getState();
+
+          document.getElementById('todos').innerHTML = '';
+          document.getElementById('goals').innerHTML = '';
+
+          todos.forEach(populateTodoList);
+          goals.forEach(populateGoalList);
+
       });
 
       store.dispatch(removeTodoAction(1));
