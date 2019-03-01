@@ -164,10 +164,21 @@
         });
       })();
 
+      function createRemoveButton (onClick) {
+        const button = document.createElement('button');
+        button.innerHTML = 'X';
+        button.addEventListener('click', onClick);
+        return button;
+      }
+
       function populateTodoList (todo) {
         const node = document.createElement('li');
         const text = document.createTextNode(todo.name);
+        const removeBtn = createRemoveButton(() => {
+          store.dispatch(removeTodoAction(todo.id));
+        })
         node.appendChild(text);
+        node.appendChild(removeBtn);
         const list = document.getElementById('todos');
         list.appendChild(node);
         node.style.textDecoration = todo.complete ? 'line-through' : 'none';
@@ -179,7 +190,11 @@
       function populateGoalList (goal) {
         const node = document.createElement('li');
         const text = document.createTextNode(goal.name);
+        const removeBtn = createRemoveButton(() => {
+          store.dispatch(removeGoalAction(goal.id));
+        })
         node.appendChild(text);
+        node.appendChild(removeBtn);
         const list = document.getElementById('goals');
         list.appendChild(node);
       }
