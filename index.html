@@ -92,10 +92,34 @@
         }
       }
 
+      const checker = (store) => (next) => (action) => {
+        const ADD_TODO = 'ADD_TODO';
+        const ADD_GOAL = 'ADD_GOAL';
+        if (action.type === ADD_TODO &&     action.todo.name.toLowerCase().includes('bitcoin')) {
+          return alert("No bitcoin.");
+        }
+
+        if (action.type === ADD_GOAL && action.goal.name.toLowerCase().includes('bitcoin')) {
+          return alert("No bitcoin.");
+        }
+
+        return next(action);
+      }
+
       const store = (Redux.createStore)(Redux.combineReducers({
         todos,
         goals,
-      }));
+      }), Redux.applyMiddleware(checker));
+
+      store.subscribe(() => {
+          const {todos, goals} = store.getState();
+
+          document.getElementById('todos').innerHTML = '';
+          document.getElementById('goals').innerHTML = '';
+
+          todos.forEach(populateTodoList);
+          goals.forEach(populateGoalList);
+      });
 
       //DOM Code
 
@@ -166,16 +190,6 @@
         const list = document.getElementById('goals');
         list.appendChild(node);
       }
-
-      store.subscribe(() => {
-          const {todos, goals} = store.getState();
-
-          document.getElementById('todos').innerHTML = '';
-          document.getElementById('goals').innerHTML = '';
-
-          todos.forEach(populateTodoList);
-          goals.forEach(populateGoalList);
-      });
     </script>
   </body>
 </html>
