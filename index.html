@@ -104,6 +104,16 @@
         }
       }
 
+      function loading (state = true, action) {
+        const RECEIVE_DATA = 'RECEIVE_DATA';
+        switch (action.type) {
+          case RECEIVE_DATA:
+            return false;
+          default:
+            return state;
+        }
+      }
+
       const checker = (store) => (next) => (action) => {
         const ADD_TODO = 'ADD_TODO';
         const ADD_GOAL = 'ADD_GOAL';
@@ -130,6 +140,7 @@
       const store = (Redux.createStore)(Redux.combineReducers({
         todos,
         goals,
+        loading
       }), Redux.applyMiddleware(checker, logger));
     </script>
     <script type="text/babel">
@@ -257,15 +268,20 @@
 
         render() {
           const {store} = this.props;
-          const {goals, todos} = store.getState();
+          const {goals, todos, loading} = store.getState();
+
+          if (loading === true) {
+            return <h3>Loading</h3>
+          }
+          
           return (
-            <div>
-              <Todos store={this.props.store} todos={todos}/>
-              <Goals store={this.props.store} goals={goals}/>
-            </div>
-          )
+              <div>
+                <Todos store={this.props.store} todos={todos}/>
+                <Goals store={this.props.store} goals={goals}/>
+              </div>
+            )
+          }
         }
-      }
 
       ReactDOM.render(
         <App store={store} />,
