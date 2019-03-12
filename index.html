@@ -222,136 +222,162 @@
 
     //React code
 
-      function List (props) {
-        const items = props.items;
-          return (
-            <ul>
-              {items.map((item) =>
-                <li key={item.id}>
-                  <span
-                    onClick={() => props.toggleItem && props.toggleItem(item.id)}
-                    style = {{textDecoration: item.complete ? 'line-through' : 'none'}}
-                  >
-                    {item.name}
-                  </span>
-                  <button onClick={() =>      props.removeItem(item)}>
-                    X
-                  </button>
-                </li>
-              )}
-            </ul>
-          )
+    function List (props) {
+      const items = props.items;
+        return (
+          <ul>
+            {items.map((item) =>
+              <li key={item.id}>
+                <span
+                  onClick={() => props.toggleItem && props.toggleItem(item.id)}
+                  style = {{textDecoration: item.complete ? 'line-through' : 'none'}}
+                >
+                  {item.name}
+                </span>
+                <button onClick={() =>      props.removeItem(item)}>
+                  X
+                </button>
+              </li>
+            )}
+          </ul>
+        )
+    }
+
+    class Todos extends React.Component {
+      addItem = (e) => {
+        e.preventDefault();
+
+        this.props.store.dispatch(handleAddTodo(
+          this.input.value,
+          () => this.input.value = ''
+        ));
       }
 
-      class Todos extends React.Component {
-        addItem = (e) => {
-          e.preventDefault();
+      removeItem = (todo) => {
+        this.props.store.dispatch(handleDeleteTodo(todo));
+      }
 
-          this.props.store.dispatch(handleAddTodo(
-            this.input.value,
-            () => this.input.value = ''
-          ));
+      toggleItem = (id) => {
+        this.props.store.dispatch(handleToggleTodo(id));
+      }
+
+      render() {
+
+        const {todos} = this.props;
+
+        return (
+          <div>
+            <h1>Todo List</h1>
+            <input
+              type="text"
+              placeholder="Add Todo"
+              ref={(input) => this.input = input}
+            />
+            <button
+              onClick={this.addItem}
+            >Add Todo
+            </button>
+
+            <List
+            items={todos}
+            removeItem={this.removeItem}
+            toggleItem={this.toggleItem}
+            />
+          </div>
+        )
+      }
+    }
+
+    class Goals extends React.Component {
+      addItem = (e) => {
+        e.preventDefault();
+
+        this.props.store.dispatch(handleAddGoal(
+          this.input.value, () => this.input.value = ''
+        ));
+      }
+
+      removeItem = (goal) => {
+        this.props.store.dispatch(handleDeleteGoal(goal));
+      }
+
+      render() {
+        const {goals} = this.props;
+
+        return (
+          <div>
+            <h1>Goals</h1>
+            <input
+              type="text"
+              placeholder="Add Goal"
+              ref={(input) => this.input = input}
+            />
+            <button
+              onClick={this.addItem}
+            >Add Goal
+            </button>
+            <List items={goals} removeItem={this.removeItem}/>
+          </div>
+        )
+      }
+    }
+
+    class App extends React.Component {
+      componentDidMount() {
+        const {store} = this.props;
+
+        store.dispatch(handleInitialData());
+
+        store.subscribe(() => this.forceUpdate());
+      }
+
+      render() {
+        const {store} = this.props;
+        const {goals, todos, loading} = store.getState();
+
+        if (loading === true) {
+          return <h3>Loading</h3>
         }
 
-        removeItem = (todo) => {
-          this.props.store.dispatch(handleDeleteTodo(todo));
-        }
-
-        toggleItem = (id) => {
-          this.props.store.dispatch(handleToggleTodo(id));
-        }
-
-        render() {
-
-          const {todos} = this.props;
-
-          return (
+        return (
             <div>
-              <h1>Todo List</h1>
-              <input
-                type="text"
-                placeholder="Add Todo"
-                ref={(input) => this.input = input}
-              />
-              <button
-                onClick={this.addItem}
-              >Add Todo
-              </button>
-
-              <List
-              items={todos}
-              removeItem={this.removeItem}
-              toggleItem={this.toggleItem}
-              />
+              <Todos store={this.props.store} todos={todos}/>
+              <Goals store={this.props.store} goals={goals}/>
             </div>
           )
         }
       }
 
-      class Goals extends React.Component {
-        addItem = (e) => {
-          e.preventDefault();
-
-          this.props.store.dispatch(handleAddGoal(
-            this.input.value, () => this.input.value = ''
-          ));
-        }
-
-        removeItem = (goal) => {
-          this.props.store.dispatch(handleDeleteGoal(goal));
-        }
-
-        render() {
-          const {goals} = this.props;
-
-          return (
-            <div>
-              <h1>Goals</h1>
-              <input
-                type="text"
-                placeholder="Add Goal"
-                ref={(input) => this.input = input}
-              />
-              <button
-                onClick={this.addItem}
-              >Add Goal
-              </button>
-              <List items={goals} removeItem={this.removeItem}/>
-            </div>
-          )
-        }
+    class ConnectedApp extends React.Component {
+      render() {
+        return (
+          <Context.Consumer>
+            {(store) => (
+              <App store={store} />
+            )}
+          </Context.Consumer>
+        )
       }
+    }
+    
+    const Context = React.createContext()
 
-      class App extends React.Component {
-        componentDidMount() {
-          const {store} = this.props;
+    class Provider extends React.Component {
+      render () {
+        return (
+          <Context.Provider value={this.props.store}>
+            {this.props.children}
+          </Context.Provider>
+        )
+      }
+    }
 
-          store.dispatch(handleInitialData());
-
-          store.subscribe(() => this.forceUpdate());
-        }
-
-        render() {
-          const {store} = this.props;
-          const {goals, todos, loading} = store.getState();
-
-          if (loading === true) {
-            return <h3>Loading</h3>
-          }
-
-          return (
-              <div>
-                <Todos store={this.props.store} todos={todos}/>
-                <Goals store={this.props.store} goals={goals}/>
-              </div>
-            )
-          }
-        }
-
-      ReactDOM.render(
-        <App store={store} />,
-        document.getElementById('app')
-      )
+    ReactDOM.render(
+      <Provider store={store}>
+        <ConnectedApp />
+      </Provider>,
+      document.getElementById('app')
+    )
     </script>
   </body>
 </html>
